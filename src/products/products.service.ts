@@ -41,15 +41,21 @@ export class ProductsService {
       if (product) return product;
     }
     const product = await this.productRepository.findOneBy({ slug: term });
+    product && console.log(new Date(product.createdAt).toLocaleString())
     if (product) return product;
+    
     throw new NotFoundException(`Producto: ${term} no encontrado`);
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    const product = await this.findOne(id)
-    Object.assign(product, updateProductDto)
-    this.productRepository.update(id, product)
-    return product;
+    try {
+      const product = await this.findOne(id)
+      Object.assign(product, updateProductDto)
+      await this.productRepository.save(product)
+      return product;
+    } catch (error) {
+      this.handlerDBException(error)
+    }
   }
 
   async remove(id: string) {
