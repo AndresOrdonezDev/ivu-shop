@@ -1,9 +1,11 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { validate as isUUID } from 'uuid'
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
-import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
 export class ProductsService {
@@ -11,52 +13,61 @@ export class ProductsService {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>
   ) { }
+
   async create(createProductDto: CreateProductDto) {
     try {
       const product = this.productRepository.create(createProductDto)
-      product.slug = product.name
-        .toLowerCase()
-        .trim()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/\s+/g, '-');
-
       await this.productRepository.save(product)
       return product
     } catch (error) {
       this.handlerDBException(error)
     }
-
   }
 
-  findAll() {
-    return `This action returns all products`;
+  //TODO: paginar
+  async findAll(paginationDto: PaginationDto) {
+    const { limit, offset } = paginationDto
+
+    return await this.productRepository.find({
+      take: limit || 10,
+      skip: offset || 0
+      //TODO: Relations
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(term: string) {
+    if (isUUID(term)) {
+      const product = await this.productRepository.findOneBy({ id: term });
+      if (product) return product;
+    }
+    const product = await this.productRepository.findOneBy({ slug: term });
+    if (product) return product;
+    throw new NotFoundException(`Producto: ${term} no encontrado`);
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto) {
+    const product = await this.findOne(id)
+    Object.assign(product, updateProductDto)
+    this.productRepository.update(id, product)
+    return product;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    const product = await this.findOne(id)
+    await this.productRepository.remove(product)
+    return `Se eliminó: ${product.name}`;
   }
 
   private handlerDBException(error: any) {
-
     // unique constraint
     if (error.code === '23505') {
       throw new BadRequestException('Ya existe un registro con ese nombre');
     }
-
     // NOT NULL constraint
     if (error.code === '23502') {
       throw new BadRequestException(error.message);
     }
-
     throw new InternalServerErrorException('Error al crear el producto (service)' + error.message)
   }
+
 }
