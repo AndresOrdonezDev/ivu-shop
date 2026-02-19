@@ -30,7 +30,8 @@ export class Product {
 
     @OneToMany(
         ()=> ProductImage,
-        (productImage)=> productImage.id
+        (productImage)=> productImage.product,
+        {cascade:true}
     )
     images?:ProductImage
 
