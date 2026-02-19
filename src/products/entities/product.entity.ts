@@ -1,5 +1,6 @@
 import { IsPositive } from "class-validator";
-import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { ProductImage } from "./product-image.entity";
 
 @Entity()
 export class Product {
@@ -23,6 +24,15 @@ export class Product {
 
     @Column('text', { unique: true })
     slug: string
+
+    @Column({type:'text', array:true, default:[]})
+    tags:string[]
+
+    @OneToMany(
+        ()=> ProductImage,
+        (productImage)=> productImage.id
+    )
+    images?:ProductImage
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date

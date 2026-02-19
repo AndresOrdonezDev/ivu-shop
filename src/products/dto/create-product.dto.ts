@@ -1,4 +1,4 @@
-import { IsString, IsNumber, Min, IsOptional, MinLength, IsNotEmpty } from 'class-validator';
+import { IsString, IsNumber, Min, IsOptional, MinLength, IsNotEmpty, IsArray } from 'class-validator';
 
 export class CreateProductDto {
 
@@ -18,5 +18,10 @@ export class CreateProductDto {
   @Min(0)
   @IsOptional()
   stock?: number;
+
+  @IsString({each:true})
+  @IsArray()
+  @IsOptional()
+  tags:string[]
 
 }
