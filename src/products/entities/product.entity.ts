@@ -29,11 +29,13 @@ export class Product {
     tags:string[]
 
     @OneToMany(
-        ()=> ProductImage,
-        (productImage)=> productImage.product,
-        {cascade:true}
+        () => ProductImage,
+        (image) => image.product,
+        { cascade: true, eager: true }
     )
-    images?:ProductImage
+    images: ProductImage[]
+
+
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date
