@@ -11,7 +11,7 @@ export class Product {
     @Column({ length: 200 })
     name: string
 
-    @Column({type:'text'})
+    @Column({type:'text',default:''})
     description: string
 
     @Column({ type: 'float' })
