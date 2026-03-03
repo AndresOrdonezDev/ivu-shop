@@ -11,6 +11,9 @@ export class Product {
     @Column({ length: 200 })
     name: string
 
+    @Column({type:'text'})
+    description: string
+
     @Column({ type: 'float' })
     price: number
 
@@ -33,9 +36,7 @@ export class Product {
         (image) => image.product,
         { cascade: true, eager: true }
     )
-    images: ProductImage[]
-
-
+    images?: ProductImage[]
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date
