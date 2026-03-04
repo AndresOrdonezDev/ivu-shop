@@ -1,17 +1,19 @@
 import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './entities/users.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt'
+import { CreateUserDto } from './dto/create-user.dto';
+import { User } from './entities/users.entity';
 import { LoginUserDto } from './dto/login-user.dto';
-
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService
   ) { }
 
   async create(createAuthDto: CreateUserDto) {
@@ -24,9 +26,12 @@ export class AuthService {
       });
       await this.userRepository.save(user)
       //return user without password
-      const userWithoutPassword = { ...user, password: undefined };
-
-      return userWithoutPassword;
+      const { password: _, ...userWithoutPassword } = user;
+      const token = this.getJwtToken({id: user.id});
+      return {
+        ...userWithoutPassword,
+        token
+      };
     } catch (error) {
       this.handlerDBException(error)
     }
@@ -35,13 +40,22 @@ export class AuthService {
   async login(loginDto: LoginUserDto) {
     const { password, email } = loginDto;
     const user = await this.userRepository.findOne({
-      where: { email },
-      select:['email', 'password',]
+      where: { email: email.toLowerCase().trim() },
+      select:{id: true,email: true, password: true }
     })
+    console.log(user)
     if (!user) throw new BadRequestException('user not found');
     if (!bcrypt.compareSync(password, user.password)) throw new UnauthorizedException('invalid password');
-    const userWithoutPassword = { ...user, password: undefined };
-    return userWithoutPassword;
+    const token = this.getJwtToken({id: user.id});
+    return {
+      id:user.id,
+      token
+    };
+  }
+
+  private getJwtToken(payload:JwtPayload){
+    const token = this.jwtService.sign(payload);
+    return token;
   }
 
   private handlerDBException(error: any): never {
