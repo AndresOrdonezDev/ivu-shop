@@ -13,7 +13,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         configService: ConfigService
-
     ) {
         super({
             secretOrKey: configService.get('JWT_SECRET') || '',
@@ -23,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     async validate(payload: JwtPayload): Promise<User> {
         const { id } = payload
-        const user = await this.userRepository.findOneBy({id})
+        const user = await this.userRepository.findOneBy({ id })
         if (!user) throw new BadRequestException('User not found')
         if (!user.isActive) throw new BadRequestException('User is not active')
         const { password, ...result } = user;

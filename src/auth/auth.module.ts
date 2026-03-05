@@ -27,7 +27,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
         }
       }
     })
-    // ----------> to config in mode no async
+    // --> to config in mode no async
     // JwtModule.register({
     //   secret: process.env.JWT_SECRET,
     //   signOptions:{
