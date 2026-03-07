@@ -1,4 +1,5 @@
 import { createParamDecorator, ExecutionContext, InternalServerErrorException } from "@nestjs/common";
+import { User } from "../entities/users.entity";
 
 
 export const GetUser = createParamDecorator(

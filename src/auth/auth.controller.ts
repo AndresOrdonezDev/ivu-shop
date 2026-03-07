@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body,UseGuards, SetMetadata} from '@nestjs/common';
+import { Controller, Get, Post, Body,UseGuards} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { GetUser } from './decorators/get-user.decorator';
 import { User } from './entities/users.entity';
-import { UserRoleGuard } from './guards/user-role/user-role.guard';
+import { Auth, ValidRoles } from './interfaces';
+
 
 @Controller('auth')
 export class AuthController {
@@ -34,10 +35,19 @@ export class AuthController {
     }
   }
 
-  @Get('test2')
-  @SetMetadata('user',['Admin','Aux'])
-  @UseGuards(AuthGuard(), UserRoleGuard)
-  testingPrivate2(@GetUser() user:User){
+  // @Get('test2') //route
+  // @RoleProtected(ValidRoles.admin, ValidRoles.aux) //inject metaData to validate in guards
+  // @UseGuards(AuthGuard(), UserRoleGuard) // authentication and authorization 
+  // testingPrivate2(@GetUser() user:User){ // get user from authentication
+  //   return{
+  //     ok:true,
+  //     user
+  //   }
+  // }
+
+  @Get('test3')
+  @Auth(ValidRoles.admin, ValidRoles.aux)
+  testingPrivate3(@GetUser() user:User){
     return{
       ok:true,
       user
