@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body,UseGuards} from '@nestjs/common';
+import { Controller, Get, Post, Body,UseGuards, SetMetadata} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { GetUser } from './decorators/get-user.decorator';
 import { User } from './entities/users.entity';
+import { UserRoleGuard } from './guards/user-role/user-role.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -34,7 +35,8 @@ export class AuthController {
   }
 
   @Get('test2')
-  @UseGuards(AuthGuard())
+  @SetMetadata('user',['Admin','Aux'])
+  @UseGuards(AuthGuard(), UserRoleGuard)
   testingPrivate2(@GetUser() user:User){
     return{
       ok:true,

@@ -43,7 +43,7 @@ export class AuthService {
       where: { email: email.toLowerCase().trim() },
       select:{id: true,email: true, password: true }
     })
-    console.log(user)
+
     if (!user) throw new BadRequestException('user not found');
     if (!bcrypt.compareSync(password, user.password)) throw new UnauthorizedException('invalid password');
     const token = this.getJwtToken({id: user.id});
